@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeartShield - Heart Disease Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .auto-filled {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .auto-filled::after {
+            content: "Auto-filled from document";
+            position: absolute;
+            top: 0;
+            right: 10px;
+            font-size: 0.7rem;
+            background: #f59e0b;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .file-upload {
+            border: 2px dashed #9ca3af;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+
+        .btn-extract {
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: none;
+            margin: 1rem auto 0;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-extract:hover {
+            background-color: #4338ca;
+        }
+        
+        .btn-extract:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .file-upload-area {
+            position: relative;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        #fileUploadedState {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-blue-600 text-white shadow-lg">
+            <div class="container mx-auto px-4 py-6">
+                <h1 class="text-3xl font-bold">HeartShield</h1>
+                <p class="text-blue-100">Early Heart Disease Risk Prediction</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <div class="bg-white rounded-lg shadow-md p-6 max-w-4xl mx-auto">
+                <h2 class="text-2xl font-semibold mb-6 text-gray-800">Patient Information</h2>
+                
+                <!-- Main Form with Upload Section -->
+                <div id="manualForm" class="tab-content active">
+                    <form id="predictionForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Column 1 -->
+    <div class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Age (Years)</label>
+            <input type="number" name="age" min="0" max="120" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Sex</label>
+            <select name="sex" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                <option value="0">Female</option>
+                <option value="1">Male</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">BMI (kg/m²)</label>
+            <input type="number" step="0.1" name="bmi" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Systolic Blood Pressure (mm Hg)</label>
+            <input type="number" name="systolic_bp" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Diastolic Blood Pressure (mm Hg)</label>
+            <input type="number" name="diastolic_bp" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        </div>
+    </div>
+    
+    <!-- Column 2 -->
+    <div class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Glucose Level (mg/dL)</label>
+            <input type="number" name="glucose" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Smoking Status</label>
+            <select name="smoking" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                <option value="0">Non-smoker</option>
+                <option value="1">Current smoker</option>
+                <option value="2">Former smoker</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Alcohol Consumption</label>
+            <select name="alcohol" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                <option value="0">None</option>
+                <option value="1">Occasional</option>
+                <option value="2">Regular</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Physical Activity (hours/week)</label>
+            <input type="number" step="0.5" name="physical_activity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Sleep Time (hours/night)</label>
+            <input type="number" step="0.5" name="sleep_time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        </div>
+    </div>
+</div>
+                        <!-- Document Upload Section -->
+                        <div class="mt-8 border-t border-gray-200 pt-6">
+                            <h3 class="text-lg font-medium text-gray-700 mb-4">Upload Medical Documents</h3>
+                            <div class="file-upload p-4">
+                                <div class="file-upload-area">
+                                    <!-- Initial State -->
+                                    <div id="uploadInitialState" class="text-center w-full">
+                                        <i class="fas fa-file-medical text-4xl text-blue-500 mb-3"></i>
+                                        <p class="text-sm text-gray-500 mb-4">
+                                            Upload PDF, JPG, or PNG files to extract medical data
+                                        </p>
+                                        <div class="flex items-center justify-center">
+                                            <label class="cursor-pointer bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-md border border-blue-200 transition duration-150 ease-in-out">
+                                                <i class="fas fa-cloud-upload-alt mr-2"></i>Choose Files
+                                                <input type="file" id="fileInput" class="hidden" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- After File Selection State -->
+                                    <div id="fileUploadedState">
+                                        <i class="fas fa-file-upload text-4xl text-green-500 mb-3"></i>
+                                        <p class="text-sm text-gray-700 mb-2" id="selectedFilesCount"></p>
+                                        <button type="button" id="extractDataBtn" class="btn-extract">
+                                            <i class="fas fa-magic mr-2"></i>Extract Data
+                                        </button>
+                                        <p class="text-xs text-gray-500 mt-3">Or drop another file to replace</p>
+                                    </div>
+                                </div>
+                                <div id="fileList" class="text-sm text-gray-600 mt-3 text-center"></div>
+                            </div>
+                            <div id="uploadResult" class="mt-4"></div>
+                        </div>
+
+                        <!-- Extracted Values Display -->
+                        <div id="extractedValues" class="hidden mb-6"></div>
+
+                        <!-- Submit Button -->
+                        <div class="pt-4">
+                            <button type="submit" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md transition duration-150 ease-in-out">
+                                <i class="fas fa-heartbeat mr-2"></i>Predict Risk
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results Section (initially hidden) -->
+            <div id="results" class="mt-8 bg-white rounded-lg shadow-md p-6 hidden">
+                <h2 class="text-2xl font-semibold mb-6 text-gray-800">Prediction Results</h2>
+                <!-- Results will be populated by JavaScript -->
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-6">
+            <div class="container mx-auto px-4 text-center">
+                <p>&copy; 2023 HeartShield - Heart Disease Prediction System</p>
+                <p class="text-sm text-gray-400 mt-2">For educational purposes only. Not for medical diagnosis.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("=== HeartShield Application Initializing ===");
+            
+            // Get DOM elements
+            const fileInput = document.getElementById('fileInput');
+            const fileList = document.getElementById('fileList');
+            const form = document.getElementById('predictionForm');
+            const uploadResult = document.getElementById('uploadResult');
+            const extractedValues = document.getElementById('extractedValues');
+            const extractDataBtn = document.getElementById('extractDataBtn');
+            const uploadInitialState = document.getElementById('uploadInitialState');
+            const fileUploadedState = document.getElementById('fileUploadedState');
+            const selectedFilesCount = document.getElementById('selectedFilesCount');
+
+            console.log("DOM elements initialized");
+
+            // Handle file selection
+            if (fileInput) {
+                console.log("Setting up file input handler");
+                fileInput.addEventListener('change', handleFileSelect);
+                
+                // Add drag and drop support
+                const dropArea = document.querySelector('.file-upload-area');
+                if (dropArea) {
+                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                        dropArea.addEventListener(eventName, preventDefaults, false);
+                    });
+
+                    function preventDefaults(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+
+                    ['dragenter', 'dragover'].forEach(eventName => {
+                        dropArea.addEventListener(eventName, highlight, false);
+                    });
+
+                    ['dragleave', 'drop'].forEach(eventName => {
+                        dropArea.addEventListener(eventName, unhighlight, false);
+                    });
+
+                    function highlight() {
+                        dropArea.closest('.file-upload').classList.add('border-blue-500', 'bg-blue-50');
+                    }
+
+                    function unhighlight() {
+                        dropArea.closest('.file-upload').classList.remove('border-blue-500', 'bg-blue-50');
+                    }
+
+                    dropArea.addEventListener('drop', handleDrop, false);
+
+                    function handleDrop(e) {
+                        const dt = e.dataTransfer;
+                        const files = dt.files;
+                        fileInput.files = files;
+                        handleFileSelect({ target: fileInput });
+                    }
+                }
+            }
+
+            // Handle file selection
+            function handleFileSelect(e) {
+                console.log("File input changed");
+                
+                fileList.innerHTML = '';
+                if (fileInput.files.length > 0) {
+                    console.log(`Processing ${fileInput.files.length} files`);
+                    const fileNames = Array.from(fileInput.files).map((file, index) => {
+                        console.log(`File ${index + 1}: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
+                        return `<div class="text-sm text-gray-700">• ${file.name} (${(file.size / 1024).toFixed(2)} KB)</div>`;
+                    }).join('');
+                    
+                    fileList.innerHTML = fileNames;
+                    selectedFilesCount.textContent = `${fileInput.files.length} file(s) selected`;
+                    
+                    // Show the extract button and update UI
+                    uploadInitialState.classList.add('hidden');
+                    fileUploadedState.style.display = 'flex';
+                    extractDataBtn.style.display = 'inline-flex';
+                } else {
+                    console.log("No files selected");
+                    uploadInitialState.classList.remove('hidden');
+                    fileUploadedState.style.display = 'none';
+                    extractDataBtn.style.display = 'none';
+                }
+            }
+
+            // Add click handler for extract button
+            if (extractDataBtn) {
+                extractDataBtn.addEventListener('click', handleExtractData);
+            }
+
+            // Function to handle data extraction
+            async function handleExtractData() {
+                if (!fileInput || fileInput.files.length === 0) {
+                    console.error("No files selected for extraction");
+                    return;
+                }
+
+                const formData = new FormData();
+                
+                // Disable the extract button and show loading state
+                extractDataBtn.disabled = true;
+                extractDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Extracting...';
+                
+                // Add files to formData
+                Array.from(fileInput.files).forEach((file) => {
+                    formData.append('files', file);
+                    console.log(`Added file: ${file.name} (${file.type}, ${(file.size / 1024).toFixed(2)} KB)`);
+                });
+                
+                // Add empty manual data
+                formData.append('manualData', JSON.stringify({}));
+                
+                try {
+                    // Show loading state
+                    uploadResult.innerHTML = '<div class="text-blue-700 bg-blue-50 p-4 rounded-md flex items-center"><i class="fas fa-spinner fa-spin mr-2"></i> Processing document and extracting data...</div>';
+                    uploadResult.classList.remove('hidden');
+                    
+                    console.log("Sending request to /upload endpoint...");
+                    
+                    const startTime = performance.now();
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const endTime = performance.now();
+                    
+                    console.log(`Upload completed in ${(endTime - startTime).toFixed(2)}ms`);
+                    console.log("Response status:", response.status, response.statusText);
+                    
+                    const result = await response.json();
+                    console.log("Upload result:", result);
+                    
+                    if (response.ok && result.status === 'success') {
+                        console.log("Extraction successful, data:", result.data);
+                        autoFillForm(result.data);
+                        uploadResult.innerHTML = '<div class="text-green-700 bg-green-50 p-4 rounded-md flex items-center"><i class="fas fa-check-circle mr-2"></i> Data extracted successfully! Review and edit the form fields as needed.</div>';
+                    } else {
+                        const errorMsg = result.detail || result.message || 'Failed to process document';
+                        throw new Error(errorMsg);
+                    }
+                } catch (error) {
+                    console.error('Error during file upload:', {
+                        name: error.name,
+                        message: error.message,
+                        stack: error.stack
+                    });
+                    uploadResult.innerHTML = `
+                        <div class="text-red-700 bg-red-50 p-4 rounded-md">
+                            <p class="font-semibold"><i class="fas fa-exclamation-circle mr-2"></i>Error: ${error.message || 'Failed to process document'}</p>
+                            <p class="text-sm mt-1">Please try again or enter the information manually.</p>
+                        </div>`;
+                } finally {
+                    // Re-enable the extract button
+                    extractDataBtn.disabled = false;
+                    extractDataBtn.innerHTML = '<i class="fas fa-magic mr-2"></i>Extract Data';
+                }
+            }
+
+            // Handle form submission
+            if (form) {
+                console.log("Setting up form submission handler");
+                form.addEventListener('submit', async (e) => {
+                    console.log("=== Form Submission Started ===");
+                    e.preventDefault();
+                    
+                    const formData = {};
+                    const formElements = Array.from(form.elements);
+                    
+                    console.log("Collecting form data...");
+                    formElements.forEach((element) => {
+                        if (element.name && element.type !== 'file' && element.type !== 'button' && element.type !== 'submit') {
+                            if ((element.type === 'checkbox' || element.type === 'radio') && element.checked) {
+                                formData[element.name] = element.value;
+                            } else if (element.type !== 'checkbox' && element.type !== 'radio') {
+                                formData[element.name] = element.value;
+                            }
+                        }
+                    });
+
+                    console.log("Collected form data:", JSON.stringify(formData, null, 2));
+                    await submitForm(formData);
+                });
+            }
+
+           // Function to auto-fill form with extracted data
+function autoFillForm(data) {
+    console.log("=== Starting Auto-Fill ===");
+    console.log("Data to fill:", JSON.stringify(data, null, 2));
+    
+    const form = document.getElementById('predictionForm');
+    if (!form) {
+        console.error("Form element not found!");
+        return;
+    }
+
+    let filledFields = 0;
+    const filledFieldsList = [];
+    
+    // Clear any previous auto-fill highlights
+    document.querySelectorAll('.auto-filled').forEach(el => {
+        el.classList.remove('bg-yellow-50', 'border-l-4', 'border-yellow-400', 'pl-3', 'py-1', 'auto-filled');
+    });
+
+    // Create a container to show extracted values
+    let extractedValuesHtml = '<div class="mb-4 p-4 bg-blue-50 rounded-md">';
+    extractedValuesHtml += '<h4 class="font-medium text-blue-800 mb-2">Extracted Values:</h4><ul class="list-disc pl-5 space-y-1">';
+    
+    // Map of field names to their display labels
+    const fieldLabels = {
+        'age': 'Age',
+        'sex': 'Sex',
+        'bmi': 'BMI',
+        'systolic_bp': 'Systolic BP',
+        'diastolic_bp': 'Diastolic BP',
+        'glucose': 'Glucose',
+        'smoking': 'Smoking Status',
+        'alcohol': 'Alcohol Consumption',
+        'physical_activity': 'Physical Activity',
+        'sleep_time': 'Sleep Time'
+    };
+
+    // First pass: Handle all non-select elements to avoid conflicts
+    for (const [field, value] of Object.entries(data)) {
+        console.log(`Processing field: ${field} = ${value} (${typeof value})`);
+        
+        // Skip if value is empty or undefined
+        if (value === undefined || value === null || value === '') {
+            console.log(`  - Skipping empty value for: ${field}`);
+            continue;
+        }
+
+        // Convert field name to lowercase for case-insensitive matching
+        const fieldLower = field.toLowerCase();
+        let input = null;
+        let inputName = field;
+
+        // Handle different field name variations
+        if (fieldLower.includes('systolic')) {
+            inputName = 'systolic_bp';
+        } else if (fieldLower.includes('diastolic')) {
+            inputName = 'diastolic_bp';
+        } else if (fieldLower.includes('physical') || fieldLower.includes('activity')) {
+            inputName = 'physical_activity';
+        } else if (fieldLower.includes('sleep') || fieldLower.includes('rest')) {
+            inputName = 'sleep_time';
+        }
+
+        // Try to find the input field
+        input = form.elements[inputName];
+        if (!input) {
+            console.warn(`  - No form field found for: ${field} (tried ${inputName})`);
+            continue;
+        }
+
+        // Handle different input types
+        if (input.type === 'radio' || input.type === 'checkbox') {
+            console.log(`  - Handling ${input.type} input: ${inputName} = ${value}`);
+            const valueToMatch = String(value).toLowerCase();
+            const selector = `input[name="${inputName}"]`;
+            const inputs = form.querySelectorAll(selector);
+            let optionFound = false;
+
+            inputs.forEach(radio => {
+                const radioValue = String(radio.value).toLowerCase();
+                if (radioValue === valueToMatch) {
+                    radio.checked = true;
+                    optionFound = true;
+                    console.log(`  - Set ${inputName} to ${value} (exact match)`);
+                }
+            });
+
+            if (optionFound) {
+                filledFields++;
+                filledFieldsList.push(inputName);
+                const formGroup = input.closest('div');
+                if (formGroup) {
+                    formGroup.classList.add('bg-yellow-50', 'border-l-4', 'border-yellow-400', 'pl-3', 'py-1', 'auto-filled');
+                }
+                extractedValuesHtml += `<li><span class="font-medium">${fieldLabels[inputName] || inputName}:</span> ${value}</li>`;
+            } else {
+                console.warn(`  - No matching ${input.type} option found for ${inputName} = ${value}`);
+            }
+        } 
+        else if (input.tagName === 'SELECT') {
+            console.log(`  - Handling select input: ${inputName} = ${value}`);
+            const valueStr = String(value).toLowerCase().trim();
+            let optionFound = false;
+            
+            // Try exact value match first
+            for (let option of input.options) {
+                if (String(option.value).toLowerCase() === valueStr) {
+                    option.selected = true;
+                    console.log(`  - Set ${inputName} to ${value} (exact match)`);
+                    optionFound = true;
+                    break;
+                }
+            }
+            
+            // Try partial match in option text
+            if (!optionFound) {
+                for (let option of input.options) {
+                    if (option.text.toLowerCase().includes(valueStr)) {
+                        option.selected = true;
+                        console.log(`  - Set ${inputName} to ${option.value} (partial match: ${option.text})`);
+                        optionFound = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (optionFound) {
+                filledFields++;
+                filledFieldsList.push(inputName);
+                const formGroup = input.closest('div');
+                if (formGroup) {
+                    formGroup.classList.add('bg-yellow-50', 'border-l-4', 'border-yellow-400', 'pl-3', 'py-1', 'auto-filled');
+                }
+                const selectedOption = input.options[input.selectedIndex];
+                extractedValuesHtml += `<li><span class="font-medium">${fieldLabels[inputName] || inputName}:</span> ${selectedOption.text}</li>`;
+            } else {
+                console.warn(`  - No matching option found for ${inputName} = ${value}`);
+            }
+        } 
+        else {
+            // Regular input field
+            console.log(`  - Setting ${inputName} to ${value}`);
+            input.value = value;
+            filledFields++;
+            filledFieldsList.push(inputName);
+            
+            const formGroup = input.closest('div');
+            if (formGroup) {
+                formGroup.classList.add('bg-yellow-50', 'border-l-4', 'border-yellow-400', 'pl-3', 'py-1', 'auto-filled');
+            }
+            
+            extractedValuesHtml += `<li><span class="font-medium">${fieldLabels[inputName] || inputName}:</span> ${value}</li>`;
+        }
+    }
+
+    extractedValuesHtml += '</ul></div>';
+    
+    // Show the extracted values above the form
+    const extractedValuesContainer = document.getElementById('extractedValues');
+    if (extractedValuesContainer) {
+        if (filledFields > 0) {
+            console.log(`Successfully filled ${filledFields} fields:`, filledFieldsList);
+            extractedValuesContainer.innerHTML = extractedValuesHtml;
+            extractedValuesContainer.classList.remove('hidden');
+            
+            // Scroll to the extracted values
+            extractedValuesContainer.scrollIntoView({ behavior: 'smooth' });
+            console.log("Form auto-filled successfully");
+        } else {
+            const warningMsg = "No matching form fields found for the extracted data.";
+            console.warn(warningMsg);
+            
+            extractedValuesContainer.innerHTML = `
+                <div class="text-yellow-700 bg-yellow-50 p-4 rounded-md">
+                    <p>${warningMsg}</p>
+                    <p class="text-sm mt-2">Available fields: ${Object.keys(fieldLabels).join(', ')}</p>
+                    <details class="mt-2 text-xs">
+                        <summary class="cursor-pointer font-medium">View extracted data</summary>
+                        <pre class="mt-1 p-2 bg-white rounded">${JSON.stringify(data, null, 2)}</pre>
+                    </details>
+                </div>`;
+            extractedValuesContainer.classList.remove('hidden');
+        }
+    }
+    
+    console.log("=== Auto-Fill Completed ===");
+}            // Function to submit form data
+            // Function to submit form data
+async function submitForm(data) {
+    console.log("=== Submitting Form Data ===");
+    console.log("Form data to submit:", JSON.stringify(data, null, 2));
+    
+    // Get the submit button and save its original state
+    const form = document.getElementById('predictionForm');
+    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+    
+    try {
+        // Show loading state
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+        }
+        
+        const startTime = performance.now();
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        const endTime = performance.now();
+        
+        console.log(`Prediction response received in ${(endTime - startTime).toFixed(2)}ms`);
+        console.log("Response status:", response.status, response.statusText);
+        
+        const result = await response.json();
+        console.log("Prediction result:", result);
+        
+        if (response.ok) {
+            showResults(result);
+        } else {
+            throw new Error(result.detail || 'Prediction failed');
+        }
+    } catch (error) {
+        console.error('Error submitting form:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+        
+        const errorContainer = document.createElement('div');
+        errorContainer.className = 'fixed bottom-4 right-4 bg-red-600 text-white p-4 rounded-lg shadow-lg max-w-md';
+        errorContainer.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span class="font-semibold">Error:</span>
+                <span class="ml-1">${error.message || 'Failed to submit form'}</span>
+            </div>
+            <div class="mt-2 text-sm opacity-90">
+                Check the browser console for details.
+            </div>
+        `;
+        document.body.appendChild(errorContainer);
+        
+        // Remove error message after 10 seconds
+        setTimeout(() => {
+            errorContainer.remove();
+        }, 10000);
+    } finally {
+        // Reset submit button
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        }
+    }
+}
+
+            // Function to show prediction results
+            function showResults(data) {
+                console.log("=== Showing Results ===");
+                console.log("Results data:", data);
+                
+                const resultsDiv = document.getElementById('results');
+                if (!resultsDiv) {
+                    console.error("Results container not found!");
+                    return;
+                }
+                
+                resultsDiv.classList.remove('hidden');
+                resultsDiv.scrollIntoView({ behavior: 'smooth' });
+                
+                // Format the results HTML
+                resultsDiv.innerHTML = `
+                    <h2 class="text-2xl font-semibold mb-6 text-gray-800">Prediction Results</h2>
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-green-700">
+                                    Prediction completed successfully!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h3 class="font-medium text-gray-900 mb-2">Risk Level</h3>
+                            <p class="text-2xl font-bold ${data.risk_level === 'High' ? 'text-red-600' : data.risk_level === 'Medium' ? 'text-yellow-600' : 'text-green-600'}">
+                                ${data.risk_level || 'N/A'}
+                            </p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h3 class="font-medium text-gray-900 mb-2">Probability</h3>
+                            <p class="text-2xl font-bold text-blue-600">${data.probability ? `${(data.probability * 100).toFixed(2)}%` : 'N/A'}</p>
+                        </div>
+                    </div>
+                    ${data.recommendations ? `
+                    <div class="mt-6">
+                        <h3 class="font-medium text-gray-900 mb-2">Recommendations</h3>
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <ul class="list-disc pl-5 space-y-1">
+                                ${data.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    ` : ''}
+                    <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                        <details>
+                            <summary class="text-sm font-medium text-gray-700 cursor-pointer">Show debug information</summary>
+                            <div class="mt-2 p-3 bg-white rounded border border-gray-200">
+                                <pre class="text-xs overflow-auto max-h-60">${JSON.stringify(data, null, 2)}</pre>
+                            </div>
+                        </details>
+                    </div>
+                `;
+                
+                console.log("Results displayed successfully");
+            }
+
+            console.log("=== HeartShield Application Initialized ===");
+        });
+    </script>
+</body>
+</html>
